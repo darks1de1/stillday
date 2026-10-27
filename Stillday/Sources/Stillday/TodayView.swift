@@ -5,6 +5,7 @@ struct TodayView: View {
     @FocusState private var focused: Bool
     @State private var showVoice = false
     @State private var showPlan = false
+    @State private var showDayPlan = false
     @State private var clearBurst = 0
     @State private var wins = 0
 
@@ -14,6 +15,12 @@ struct TodayView: View {
                 HStack {
                     Label12(text: Date.now.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
                     Spacer()
+                    Button { showDayPlan = true } label: {
+                        Image(systemName: "sparkles").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.next)
+                            .frame(width: 30, height: 30).background(Theme.next.opacity(0.12), in: Circle())
+                    }
+                    .buttonStyle(PressStyle())
+                    .accessibilityLabel("Plan my day")
                     Button { showPlan = true } label: {
                         Image(systemName: "calendar").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.ink)
                             .frame(width: 30, height: 30).background(Theme.soft, in: Circle())
@@ -90,6 +97,7 @@ struct TodayView: View {
         .scrollDismissesKeyboard(.interactively)
         .overlay { if clearBurst > 0 { Burst(count: 30, radius: 150).id(clearBurst) } }
         .sheet(isPresented: $showVoice) { VoiceSheet(day: store.startOfDay()) }
+        .sheet(isPresented: $showDayPlan) { PlanDaySheet() }
         .sheet(isPresented: $showPlan) {
             PlanView().background(Theme.bg.ignoresSafeArea()).presentationDragIndicator(.visible)
         }
@@ -155,6 +163,9 @@ struct TaskRow: View {
                     if let d = task.doneAt {
                         Text("done " + d.formatted(date: .omitted, time: .shortened))
                             .font(Theme.sans(12)).foregroundStyle(Theme.mute)
+                    } else if let p = task.plannedAt {
+                        Text(p.formatted(date: .omitted, time: .shortened) + (task.minutes.map { " · \($0) min" } ?? ""))
+                            .font(Theme.sans(12)).foregroundStyle(isNext ? Theme.next : Theme.mute).monospacedDigit()
                     }
                 }
                 Spacer(minLength: 0)

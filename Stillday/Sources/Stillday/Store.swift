@@ -11,6 +11,8 @@ struct TaskItem: Identifiable, Codable, Equatable {
     var order: Int
     var state: TaskState = .active
     var removedAt: Date?
+    var plannedAt: Date?
+    var minutes: Int?
     var isDone: Bool { doneAt != nil }
 
     init(title: String, day: Date, order: Int) {
@@ -29,6 +31,8 @@ struct TaskItem: Identifiable, Codable, Equatable {
         order = try c.decode(Int.self, forKey: .order)
         state = try c.decodeIfPresent(TaskState.self, forKey: .state) ?? .active
         removedAt = try c.decodeIfPresent(Date.self, forKey: .removedAt)
+        plannedAt = try c.decodeIfPresent(Date.self, forKey: .plannedAt)
+        minutes = try c.decodeIfPresent(Int.self, forKey: .minutes)
     }
 }
 
@@ -97,6 +101,23 @@ final class Store {
     func archive(_ id: UUID) { setState(id, .archived) }
     func trash(_ id: UUID) { setState(id, .trashed) }
     func restore(_ id: UUID) { setState(id, .active) }
+
+    /// Gives tasks their start time and length, and puts them in time order at the top of today's list.
+    func setPlan(_ blocks: [DayPlanner.Block]) {
+        var order = 0
+        for b in blocks.sorted(by: { $0.start < $1.start }) {
+            guard let i = tasks.firstIndex(where: { $0.id == b.id }) else { continue }
+            tasks[i].plannedAt = b.start
+            tasks[i].minutes = b.minutes
+            tasks[i].order = order
+            order += 1
+        }
+        let placed = Set(blocks.map(\.id))
+        for t in today where !placed.contains(t.id) {
+            if let i = tasks.firstIndex(where: { $0.id == t.id }) { tasks[i].order = order; order += 1 }
+        }
+        commit()
+    }
 
     func rename(_ id: UUID, to title: String) {
         let t = title.trimmingCharacters(in: .whitespacesAndNewlines)

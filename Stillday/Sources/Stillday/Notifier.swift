@@ -43,6 +43,11 @@ enum Notifier {
         }
         b.setPending(times)
 
+        c.removePendingNotificationRequests(withIdentifiers: s.tasks.map { "plan-\($0.id.uuidString)" })
+        for t in left {
+            if let p = t.plannedAt { add("plan-\(t.id.uuidString)", at: p, "Time for \(t.title)" + (t.minutes.map { ". \($0) min." } ?? ".")) }
+        }
+
         if s.doneCount == 0 && streak > 0 && !left.isEmpty {
             add("nudge-0-s", at: at(0, 21), "One tap saves day \(streak).")
         }
