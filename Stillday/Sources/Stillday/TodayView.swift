@@ -4,6 +4,7 @@ struct TodayView: View {
     @Environment(Store.self) private var store
     @FocusState private var focused: Bool
     @State private var showVoice = false
+    @State private var showPlan = false
     @State private var clearBurst = 0
     @State private var wins = 0
 
@@ -13,6 +14,12 @@ struct TodayView: View {
                 HStack {
                     Label12(text: Date.now.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
                     Spacer()
+                    Button { showPlan = true } label: {
+                        Image(systemName: "calendar").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.ink)
+                            .frame(width: 30, height: 30).background(Theme.soft, in: Circle())
+                    }
+                    .buttonStyle(PressStyle())
+                    .accessibilityLabel("Plan ahead")
                     HStack(spacing: 4) {
                         Text("Streak")
                         Text("\(store.streak)").foregroundStyle(Theme.next)
@@ -83,6 +90,9 @@ struct TodayView: View {
         .scrollDismissesKeyboard(.interactively)
         .overlay { if clearBurst > 0 { Burst(count: 30, radius: 150).id(clearBurst) } }
         .sheet(isPresented: $showVoice) { VoiceSheet(day: store.startOfDay()) }
+        .sheet(isPresented: $showPlan) {
+            PlanView().background(Theme.bg.ignoresSafeArea()).presentationDragIndicator(.visible)
+        }
         .sensoryFeedback(.success, trigger: store.doneCount)
         .onChange(of: store.doneCount) { old, new in if new > old { celebrate() } }
     }
@@ -122,7 +132,9 @@ struct TaskRow: View {
     let task: TaskItem
     let isNext: Bool
     let action: () -> Void
+    @Environment(Store.self) private var store
     @State private var burst = 0
+    @State private var editing = false
 
     private var tint: Color { task.isDone ? Theme.mute : isNext ? Theme.next : Theme.ink }
 
@@ -151,6 +163,12 @@ struct TaskRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressStyle())
+        .contextMenu {
+            Button { editing = true } label: { Label("Edit", systemImage: "pencil") }
+        }
+        .sheet(isPresented: $editing) {
+            EditSheet(initial: task.title) { store.rename(task.id, to: $0) }
+        }
         .onChange(of: task.isDone) { _, done in if done { burst += 1 } }
     }
 }
@@ -221,33 +239,26 @@ struct Burst: View {
     }
 }
 
-/// Slim progress bar that breathes with a soft glow while a light sweeps across it every few seconds.
+/// Slim progress bar. Its leading edge pulses like the next-task bullet: a dot with a ring that expands and fades.
 struct ProgressPulse: View {
     let value: Double
 
     var body: some View {
-        TimelineView(.animation) { ctx in
-            let t = ctx.date.timeIntervalSinceReferenceDate
-            let breathe = (sin(t * 2 * .pi / 5 - .pi / 2) + 1) / 2
-            let sheen = min(1, t.truncatingRemainder(dividingBy: 5) / 3.25)
-            GeometryReader { g in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.soft)
-                    Capsule()
-                        .fill(LinearGradient(colors: [Theme.next.opacity(0.55), Theme.next], startPoint: .leading, endPoint: .trailing))
-                        .frame(width: max(0, g.size.width * value))
-                        .overlay {
-                            GeometryReader { f in
-                                LinearGradient(colors: [.clear, .white.opacity(0.38), .clear], startPoint: .leading, endPoint: .trailing)
-                                    .frame(width: f.size.width * 0.45)
-                                    .offset(x: f.size.width * (sheen * 1.4 - 0.45))
-                            }
-                            .clipShape(Capsule())
-                        }
-                        .shadow(color: Theme.next.opacity(0.34 * breathe), radius: 8)
-                        .animation(.spring(response: 0.8, dampingFraction: 0.85), value: value)
+        GeometryReader { g in
+            let w = max(5, g.size.width * value)
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.soft)
+                Capsule()
+                    .fill(LinearGradient(colors: [Theme.next.opacity(0.55), Theme.next], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: w)
+                ZStack {
+                    Circle().fill(Theme.next)
+                    PulseRing()
                 }
+                .frame(width: 9, height: 9)
+                .offset(x: w - 4.5)
             }
+            .animation(.spring(response: 0.8, dampingFraction: 0.85), value: value)
         }
         .frame(height: 5)
     }

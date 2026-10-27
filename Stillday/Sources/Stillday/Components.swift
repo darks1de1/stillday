@@ -51,3 +51,49 @@ struct AddBar: View {
         focus.wrappedValue = true
     }
 }
+
+/// Small sheet for changing a task's title.
+struct EditSheet: View {
+    let save: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var text: String
+    @FocusState private var focused: Bool
+
+    init(initial: String, save: @escaping (String) -> Void) {
+        _text = State(initialValue: initial)
+        self.save = save
+    }
+
+    private var empty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label12(text: "Edit task").padding(.top, 26)
+            TextField("Task", text: $text, axis: .vertical)
+                .font(Theme.sans(18, .medium))
+                .focused($focused)
+                .lineLimit(1...4)
+                .padding(14)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.next, lineWidth: 1.5))
+            Button {
+                save(text)
+                Sound.play(.add)
+                dismiss()
+            } label: {
+                Text("Save").font(Theme.sans(16, .semibold)).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(Theme.next.opacity(empty ? 0.35 : 1), in: Capsule())
+            }
+            .buttonStyle(PressStyle())
+            .disabled(empty)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 22)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.bg.ignoresSafeArea())
+        .presentationDetents([.height(270)])
+        .presentationDragIndicator(.visible)
+        .onAppear { focused = true }
+    }
+}

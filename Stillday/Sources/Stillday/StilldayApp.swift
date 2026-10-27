@@ -9,19 +9,26 @@ struct StilldayApp: App {
         WindowGroup {
             RootView()
                 .environment(store)
-                .task { Notifier.requestAuth() }
+                .task {
+                    Notifier.requestAuth()
+                    Behavior.shared.recordOpen()
+                    Notifier.reschedule(store)
+                }
                 .onChange(of: phase) { _, p in
-                    if p == .active { Notifier.reschedule(store) }
+                    if p == .active {
+                        Behavior.shared.recordOpen()
+                        Notifier.reschedule(store)
+                    }
                 }
         }
     }
 }
 
 enum Tab: CaseIterable {
-    case today, plan, week, history, search
-    var title: String { ["Today", "Plan", "Week", "History", "Search"][Tab.allCases.firstIndex(of: self)!] }
+    case today, week, history, search
+    var title: String { ["Today", "Week", "History", "Search"][Tab.allCases.firstIndex(of: self)!] }
     var icon: String {
-        ["checkmark.circle", "calendar", "chart.bar", "clock.arrow.circlepath", "magnifyingglass"][Tab.allCases.firstIndex(of: self)!]
+        ["checkmark.circle", "chart.bar", "clock.arrow.circlepath", "magnifyingglass"][Tab.allCases.firstIndex(of: self)!]
     }
 }
 
@@ -36,7 +43,6 @@ struct RootView: View {
             Group {
                 switch tab {
                 case .today: TodayView()
-                case .plan: PlanView()
                 case .week: WeekView()
                 case .history: HistoryView()
                 case .search: SearchView()

@@ -98,6 +98,13 @@ final class Store {
     func trash(_ id: UUID) { setState(id, .trashed) }
     func restore(_ id: UUID) { setState(id, .active) }
 
+    func rename(_ id: UUID, to title: String) {
+        let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty, let i = tasks.firstIndex(where: { $0.id == id }), tasks[i].title != t else { return }
+        tasks[i].title = t
+        commit()
+    }
+
     func purge(_ id: UUID) {
         tasks.removeAll { $0.id == id }
         commit()
