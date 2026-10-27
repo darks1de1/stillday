@@ -1,0 +1,10 @@
+version: 1
+bundleID: com.northmedia.stillday
+iconPath: Resources/AppIcon.png
+infoPath: Info.plist
+resources:
+- Resources/Fonts/Newsreader-Regular.ttf
+- Resources/Fonts/Newsreader-Italic.ttf
+- Resources/Fonts/Hanken-Regular.ttf
+- Resources/Fonts/Hanken-Medium.ttf
+- Resources/Fonts/Hanken-SemiBold.ttf

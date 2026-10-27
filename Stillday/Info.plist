@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>Stillday</string>
+    <key>UIAppFonts</key>
+    <array>
+        <string>Newsreader-Regular.ttf</string>
+        <string>Newsreader-Italic.ttf</string>
+        <string>Hanken-Regular.ttf</string>
+        <string>Hanken-Medium.ttf</string>
+        <string>Hanken-SemiBold.ttf</string>
+    </array>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Stillday listens while you hold the voice button, so you can say your tasks out loud.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Stillday turns what you say into a list of tasks. It uses on-device recognition when your device supports it.</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+</dict>
+</plist>

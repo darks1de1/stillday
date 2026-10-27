@@ -1,0 +1,104 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1793072496.5928388,
+    "seen": 1793088114.5841534,
+    "ast_hash": "c47fd1a5a11992b7fa82668e42741c74",
+    "semantic_hash": ""
+  },
+  "Stillday/Package.swift": {
+    "mtime": 1793080559.3052852,
+    "seen": 1793088114.5841534,
+    "ast_hash": "44c0625873b5f28b9e67a3c66db07de3",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/HistorySearch.swift": {
+    "mtime": 1793091812.3432617,
+    "seen": 1793091858.9551094,
+    "ast_hash": "936ac238582bfe988c156e0252f737ea",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Notifier.swift": {
+    "mtime": 1793089362.6517594,
+    "seen": 1793089396.7253857,
+    "ast_hash": "1a18c1ff4ccc6d730b00ffd4b39f6ed3",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/StilldayApp.swift": {
+    "mtime": 1793091812.344255,
+    "seen": 1793091858.9551094,
+    "ast_hash": "18294d60f0b8554dec299ba96ea42b64",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Store.swift": {
+    "mtime": 1793089307.6434057,
+    "seen": 1793089396.7253857,
+    "ast_hash": "ee8fc48cbda44583434e5e6040683726",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Theme.swift": {
+    "mtime": 1793092255.415774,
+    "seen": 1793092269.1745927,
+    "ast_hash": "ed75b2132a3f4b351e75001a20c3d310",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/TodayView.swift": {
+    "mtime": 1793092255.4641669,
+    "seen": 1793092269.1745927,
+    "ast_hash": "f15d42952cbd7288bcf4b82a1791f9d6",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/WeekView.swift": {
+    "mtime": 1793092841.7643733,
+    "seen": 1793092854.7067006,
+    "ast_hash": "184b943c7c4056d74361a5326a2491e1",
+    "semantic_hash": ""
+  },
+  "Stillday/xtool.yml": {
+    "mtime": 1793091825.4357572,
+    "seen": 1793091858.9551094,
+    "ast_hash": "c3bf2ffe23b703872d5334304f88e861",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1793072496.5898435,
+    "seen": 1793088114.5841534,
+    "ast_hash": "67d88e9d0760c3ba54c75dfd9551c1c5",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/PlanView.swift": {
+    "mtime": 1793092841.8117888,
+    "seen": 1793092854.7067006,
+    "ast_hash": "72d779b0b0458863ebc725874d9bdde4",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Swipe.swift": {
+    "mtime": 1793091825.362114,
+    "seen": 1793091858.9551094,
+    "ast_hash": "764cc7cf3a0c00eecb7337feaedcdbeb",
+    "semantic_hash": ""
+  },
+  "Stillday/Resources/AppIcon.png": {
+    "mtime": 1793089237.6355548,
+    "seen": 1793089396.7253857,
+    "ast_hash": "2bfbb10368e062b53554d75e63652b94",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Components.swift": {
+    "mtime": 1793091369.5580623,
+    "seen": 1793091392.647903,
+    "ast_hash": "aaf186d433e6af0264dc6d37fa95fc2a",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Voice.swift": {
+    "mtime": 1793091812.345758,
+    "seen": 1793091858.9551094,
+    "ast_hash": "4f54808f73b4e9b47e2c4873d80f7dc1",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Sound.swift": {
+    "mtime": 1793091357.7122936,
+    "seen": 1793091392.647903,
+    "ast_hash": "37f5af0606d42784b505ed01e6620c6e",
+    "semantic_hash": ""
+  }
+}

@@ -1,0 +1,8 @@
+graphify-out/cache/
+.DS_Store
+xcuserdata/
+DerivedData/
+*.ipa
+Stillday/xtool/
+Stillday/.build/
+.swiftpm/
