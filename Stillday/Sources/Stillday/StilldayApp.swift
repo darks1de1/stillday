@@ -11,13 +11,16 @@ struct StilldayApp: App {
                 .environment(store)
                 .task {
                     Notifier.requestAuth()
+                    FocusController.shared.endStale()
                     Behavior.shared.recordOpen()
                     Notifier.reschedule(store)
+                    WidgetBridge.publish(store)
                 }
                 .onChange(of: phase) { _, p in
                     if p == .active {
                         Behavior.shared.recordOpen()
                         Notifier.reschedule(store)
+                        WidgetBridge.publish(store)
                     }
                 }
         }

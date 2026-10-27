@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(Store.self) private var store
     @FocusState private var focused: Bool
+    private let focus = FocusController.shared
     @State private var showVoice = false
     @State private var showPlan = false
     @State private var showDayPlan = false
@@ -46,6 +47,20 @@ struct TodayView: View {
 
                 ProgressPulse(value: store.today.isEmpty ? 0 : Double(store.doneCount) / Double(store.today.count))
                     .padding(.bottom, 14)
+
+                if focus.isOn {
+                    HStack(spacing: 10) {
+                        ZStack { Circle().fill(Theme.next); PulseRing() }.frame(width: 9, height: 9)
+                        Text("Focusing: \(focus.title)").font(Theme.sans(13, .medium)).foregroundStyle(Theme.next).lineLimit(1)
+                        Spacer(minLength: 8)
+                        Button("End") { withAnimation { focus.end() } }
+                            .font(Theme.sans(13, .semibold)).foregroundStyle(Theme.ink)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .background(Theme.next.opacity(0.1), in: Capsule())
+                    .padding(.bottom, 10)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
 
                 if !store.yesterdayOpen.isEmpty {
                     Button { withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) { store.moveYesterdayToToday() } } label: {
@@ -175,6 +190,13 @@ struct TaskRow: View {
         }
         .buttonStyle(PressStyle())
         .contextMenu {
+            if !task.isDone {
+                Button {
+                    if !FocusController.shared.start(task) {
+                        store.showToast("Turn on Live Activities for Stillday in Settings")
+                    }
+                } label: { Label("Focus now", systemImage: "scope") }
+            }
             Button { editing = true } label: { Label("Edit", systemImage: "pencil") }
         }
         .sheet(isPresented: $editing) {

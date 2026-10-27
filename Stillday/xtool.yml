@@ -1,5 +1,6 @@
 version: 1
 bundleID: com.northmedia.stillday
+product: Stillday
 iconPath: Resources/AppIcon.png
 infoPath: Info.plist
 resources:
@@ -8,3 +9,6 @@ resources:
 - Resources/Fonts/Hanken-Regular.ttf
 - Resources/Fonts/Hanken-Medium.ttf
 - Resources/Fonts/Hanken-SemiBold.ttf
+extensions:
+- product: StilldayWidget
+  infoPath: StilldayWidget-Info.plist

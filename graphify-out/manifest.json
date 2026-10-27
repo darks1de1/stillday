@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "Stillday/Package.swift": {
-    "mtime": 1793080559.3052852,
-    "seen": 1793088114.5841534,
-    "ast_hash": "44c0625873b5f28b9e67a3c66db07de3",
+    "mtime": 1793144690.628701,
+    "seen": 1793144815.7580874,
+    "ast_hash": "6f1c64c07370317cdf127b7129a9c4a9",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/HistorySearch.swift": {
@@ -24,15 +24,15 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/StilldayApp.swift": {
-    "mtime": 1793143608.920107,
-    "seen": 1793143674.5423384,
-    "ast_hash": "3b4f8460e787299d326763db7c2c99d8",
+    "mtime": 1793144395.4845276,
+    "seen": 1793144815.7601006,
+    "ast_hash": "61b18404702509c343b8c7f079ab6fa6",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Store.swift": {
-    "mtime": 1793143831.9293907,
-    "seen": 1793143888.4265037,
-    "ast_hash": "2bd675fc9bf735402a8f918220979c74",
+    "mtime": 1793144395.094743,
+    "seen": 1793144815.7601006,
+    "ast_hash": "4af86c8061ab8e3099b687ad514809f6",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Theme.swift": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/TodayView.swift": {
-    "mtime": 1793143832.702294,
-    "seen": 1793143888.4265037,
-    "ast_hash": "6be6499870cb69fcb0bb06ac0bc52e55",
+    "mtime": 1793144409.2213168,
+    "seen": 1793144815.7610857,
+    "ast_hash": "294a36398760f6ad3fa4ac5ff19c537f",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/WeekView.swift": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "Stillday/xtool.yml": {
-    "mtime": 1793091825.4357572,
-    "seen": 1793091858.9551094,
-    "ast_hash": "c3bf2ffe23b703872d5334304f88e861",
+    "mtime": 1793144776.8352146,
+    "seen": 1793144815.7610857,
+    "ast_hash": "ff3214536fa163edacfeb85000870ee7",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -543,6 +543,30 @@
     "mtime": 1793143831.3675466,
     "seen": 1793143888.425501,
     "ast_hash": "04ae1c29bb44cf63bd7064584f487abb",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/StilldayShared/Shared.swift": {
+    "mtime": 1793144776.747172,
+    "seen": 1793144815.7580874,
+    "ast_hash": "f12664d96752b0c94ff755b9b03a45d7",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/StilldayWidget/FocusLiveActivity.swift": {
+    "mtime": 1793144394.689842,
+    "seen": 1793144815.7580874,
+    "ast_hash": "a35a0526e1217582eb3e57d58f46191e",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/StilldayWidget/Widgets.swift": {
+    "mtime": 1793144394.4811509,
+    "seen": 1793144815.7580874,
+    "ast_hash": "7d49e82944b826394e87c0d0e5024ea8",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/WidgetBridge.swift": {
+    "mtime": 1793144394.8938355,
+    "seen": 1793144815.7610857,
+    "ast_hash": "ff780c431d68eb5794c6d4be6ddb205f",
     "semantic_hash": ""
   }
 }

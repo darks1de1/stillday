@@ -201,5 +201,7 @@ final class Store {
     private func commit() {
         if let data = try? JSONEncoder().encode(tasks) { try? data.write(to: url, options: .atomic) }
         Notifier.reschedule(self)
+        WidgetBridge.publish(self)
+        FocusController.shared.reconcile(self)
     }
 }
