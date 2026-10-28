@@ -1,19 +1,47 @@
 import SwiftUI
+import UIKit
 #if canImport(FoundationModels)
 import FoundationModels
 #endif
 
 enum AIPlanner {
-    /// nil when Apple's on-device model is not available (older iOS, Apple Intelligence off) or the request fails.
-    static func ask(_ prompt: String) async -> String? {
+    /// `text` is nil when Apple's on-device model could not answer; `note` then says why, in words you can act on.
+    struct Answer {
+        var text: String?
+        var note = ""
+    }
+
+    static func ask(_ prompt: String) async -> Answer {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            guard case .available = SystemLanguageModel.default.availability else { return nil }
-            let session = LanguageModelSession(instructions: "You plan a person's day. Follow the requested output format exactly.")
-            return try? await session.respond(to: prompt).content
+            switch SystemLanguageModel.default.availability {
+            case .available:
+                do {
+                    let session = LanguageModelSession(instructions: "You plan a person's day. Follow the requested output format exactly.")
+                    let response = try await session.respond(to: prompt)
+                    return Answer(text: response.content)
+                } catch {
+                    return Answer(note: "Apple Intelligence returned an error: \(error.localizedDescription)")
+                }
+            case .unavailable(let reason):
+                switch reason {
+                case .deviceNotEligible:
+                    return Answer(note: "This iPhone does not support Apple Intelligence.")
+                case .appleIntelligenceNotEnabled:
+                    return Answer(note: "Apple Intelligence is off. Turn it on in Settings, Apple Intelligence & Siri.")
+                case .modelNotReady:
+                    return Answer(note: "Apple Intelligence is still downloading its model. Try again later, on Wi-Fi and charging.")
+                @unknown default:
+                    return Answer(note: "Apple Intelligence is not available on this phone right now.")
+                }
+            @unknown default:
+                return Answer(note: "Apple Intelligence is not available on this phone right now.")
+            }
         }
+        return Answer(note: "Apple Intelligence needs iOS 26 or later. This phone is on iOS \(UIDevice.current.systemVersion).")
+        #else
+        return Answer(note: "This build does not include Apple Intelligence.")
         #endif
-        return nil
     }
 }
 
@@ -124,13 +152,15 @@ struct PlanDaySheet: View {
         defer { busy = false }
         let cal = store.cal
         let result: [DayPlanner.Block]
-        if let text = await AIPlanner.ask(DayPlanner.prompt(items, start: start, end: end, cal: cal)),
-           let parsed = DayPlanner.parse(text, items: items, start: start, end: end, cal: cal) {
+        let answer = await AIPlanner.ask(DayPlanner.prompt(items, start: start, end: end, cal: cal))
+        if let text = answer.text, let parsed = DayPlanner.parse(text, items: items, start: start, end: end, cal: cal) {
             result = parsed
             source = "Planned with Apple Intelligence, on this phone."
         } else {
             result = DayPlanner.even(items, start: start, end: end)
-            source = "Spaced evenly. Apple Intelligence was not available, or its answer did not fit your window."
+            source = answer.text == nil
+                ? "Spaced evenly. " + answer.note
+                : "Spaced evenly. Apple Intelligence answered, but its plan did not fit your window."
         }
         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { blocks = result }
     }
