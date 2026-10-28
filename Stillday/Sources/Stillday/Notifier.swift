@@ -5,8 +5,48 @@ import UserNotifications
 /// iOS keeps at most 64 pending local notifications; this uses at most 6 nudges, a few fixed ones and one weekly.
 @MainActor
 enum Notifier {
+    static let stepCategory = "justthis"
+
     static func requestAuth() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+
+    static func registerCategories() {
+        let done = UNNotificationAction(identifier: "step-done", title: "Done", options: [])
+        let later = UNNotificationAction(identifier: "step-later", title: "In 20 min", options: [])
+        UNUserNotificationCenter.current().setNotificationCategories([
+            UNNotificationCategory(identifier: stepCategory, actions: [done, later], intentIdentifiers: [], options: [])
+        ])
+    }
+
+    /// One nudge for one step, a few minutes from now.
+    static func scheduleStep(_ task: TaskItem, in minutes: Double, prefix: String) {
+        guard let step = task.currentStep else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Stillday"
+        content.body = prefix + step.title
+        content.sound = .default
+        content.categoryIdentifier = stepCategory
+        content.userInfo = ["task": task.id.uuidString]
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(60, minutes * 60), repeats: false)
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "step-\(task.id.uuidString)", content: content, trigger: trigger))
+    }
+
+    /// Buttons on a nudge, or a tap on it. Done moves the ladder forward and queues the next step.
+    static func handle(action: String, task id: UUID?) {
+        let s = Store.shared
+        guard let id else { return }
+        switch action {
+        case "step-done":
+            if s.completeStep(id), s.tasks.first(where: { $0.id == id })?.isDone == false { s.toggle(id) }
+            if let t = s.tasks.first(where: { $0.id == id }), !t.isDone { scheduleStep(t, in: 3, prefix: "Next: ") }
+        case "step-later":
+            if let t = s.tasks.first(where: { $0.id == id }) { scheduleStep(t, in: 20, prefix: "Just this: ") }
+        case UNNotificationDefaultActionIdentifier:
+            s.openJustThis = id
+        default:
+            break
+        }
     }
 
     static func reschedule(_ s: Store) {
@@ -15,12 +55,17 @@ enum Notifier {
         let adaptive = (0..<8).map { "nudge-t-\($0)" }
         c.removePendingNotificationRequests(withIdentifiers: legacy + adaptive)
 
-        func add(_ id: String, at when: Date, _ body: String) {
+        func add(_ id: String, at when: Date, _ body: String, task: UUID? = nil) {
             guard when > .now else { return }
             let content = UNMutableNotificationContent()
             content.title = "Stillday"
             content.body = body
             content.sound = .default
+            if let task {
+                // A nudge about a tiny step carries Done and Later buttons, so you can act without opening the app.
+                content.categoryIdentifier = Notifier.stepCategory
+                content.userInfo = ["task": task.uuidString]
+            }
             let comps = s.cal.dateComponents([.year, .month, .day, .hour, .minute], from: when)
             c.add(UNNotificationRequest(identifier: id, content: content,
                                         trigger: UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)))
@@ -39,7 +84,7 @@ enum Notifier {
         for (i, t) in times.enumerated() {
             let body = Planner.copy(ignored: b.ignoredStreak, title: left.first?.title ?? "your list",
                                     left: left.count, streak: streak, index: i, step: left.first?.currentStep?.title)
-            add("nudge-t-\(i)", at: t, body)
+            add("nudge-t-\(i)", at: t, body, task: left.first?.currentStep != nil ? left.first?.id : nil)
         }
         b.setPending(times)
 

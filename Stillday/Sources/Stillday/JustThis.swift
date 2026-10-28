@@ -240,3 +240,34 @@ struct StepsEditor: View {
         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { rows = result.map { Row(text: $0) } }
     }
 }
+
+/// The quiet offer on Today. It appears only when the signs say you are avoiding your next task.
+struct HelpCard: View {
+    let offer: Store.HelpOffer
+    let start: () -> Void
+    let later: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("STUCK?").font(Theme.sans(11, .semibold)).tracking(1.2).foregroundStyle(Theme.next)
+            Text(offer.task.currentStep.map { "Just this: \($0.title)" } ?? "Want the smallest first step for “\(offer.task.title)”?")
+                .font(Theme.serif(21)).foregroundStyle(Theme.ink)
+            if !offer.reason.isEmpty {
+                Text(offer.reason).font(Theme.sans(13)).foregroundStyle(Theme.mute)
+            }
+            HStack(spacing: 14) {
+                Button(action: start) {
+                    Text("Start").font(Theme.sans(15, .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 24).padding(.vertical, 11)
+                        .background(Theme.next, in: Capsule())
+                }
+                .buttonStyle(PressStyle())
+                Button("Later", action: later).font(Theme.sans(14, .medium)).foregroundStyle(Theme.mute)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.next.opacity(0.1), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Theme.next.opacity(0.3), lineWidth: 1))
+    }
+}

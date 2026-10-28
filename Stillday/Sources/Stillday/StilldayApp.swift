@@ -1,8 +1,32 @@
 import SwiftUI
+import UserNotifications
+
+/// Receives the buttons and taps on nudges.
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        Notifier.registerCategories()
+        return true
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                            willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .sound]
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                            didReceive response: UNNotificationResponse) async {
+        let action = response.actionIdentifier
+        let id = (response.notification.request.content.userInfo["task"] as? String).flatMap(UUID.init)
+        await MainActor.run { Notifier.handle(action: action, task: id) }
+    }
+}
 
 @main
 struct StilldayApp: App {
-    @State private var store = Store()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @State private var store = Store.shared
     @Environment(\.scenePhase) private var phase
 
     var body: some Scene {
@@ -70,6 +94,9 @@ struct RootView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.toast)
+        .onChange(of: store.openJustThis) { _, id in
+            if id != nil { withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { tab = .today } }
+        }
         .safeAreaInset(edge: .bottom) { tabBar }
     }
 
@@ -81,7 +108,7 @@ struct RootView: View {
                 } label: {
                     VStack(spacing: 2) {
                         Image(systemName: t.icon).font(.system(size: 18, weight: .regular))
-                        Text(t.title).font(.system(size: 10.5, weight: .medium))
+                        Text(t.title).font(Theme.sans(10.5, .medium))
                     }
                     .foregroundStyle(tab == t ? Theme.ink : Theme.mute)
                     .frame(maxWidth: .infinity, minHeight: 48)

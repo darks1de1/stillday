@@ -18,21 +18,21 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Notifier.swift": {
-    "mtime": 1793146104.9424543,
-    "seen": 1793146227.6627014,
-    "ast_hash": "94f14997478746ba97fb12aca01459a5",
+    "mtime": 1793147107.5100725,
+    "seen": 1793147178.9652817,
+    "ast_hash": "9623c3cc2087f1a8e486f31cfb3c00b1",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/StilldayApp.swift": {
-    "mtime": 1793144395.4845276,
-    "seen": 1793144815.7601006,
-    "ast_hash": "61b18404702509c343b8c7f079ab6fa6",
+    "mtime": 1793147107.7353125,
+    "seen": 1793147178.9652817,
+    "ast_hash": "0107270eb869a09950cb03891d4d95ba",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Store.swift": {
-    "mtime": 1793146104.2854328,
-    "seen": 1793146227.6627014,
-    "ast_hash": "8c744034d32a8ea23fe74f0cb5d8915d",
+    "mtime": 1793147086.2661045,
+    "seen": 1793147178.9652817,
+    "ast_hash": "efd21f5b18b198c7952acf229044b335",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Theme.swift": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/TodayView.swift": {
-    "mtime": 1793146183.8182826,
-    "seen": 1793146227.6627014,
-    "ast_hash": "be4ec6a71545fcb15ef82822151fe79b",
+    "mtime": 1793147142.4604318,
+    "seen": 1793147178.9652817,
+    "ast_hash": "8d77bb366ac9bf9c32c885e95fb5e449",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/WeekView.swift": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Behavior.swift": {
-    "mtime": 1793146104.53124,
-    "seen": 1793146227.6617033,
-    "ast_hash": "b3445a5e9878abe28c4d10afe127e396",
+    "mtime": 1793147084.6791995,
+    "seen": 1793147178.9652817,
+    "ast_hash": "55409bb6cacb3a79d0a7450935fbc3df",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Planner.swift": {
@@ -570,15 +570,21 @@
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/JustThis.swift": {
-    "mtime": 1793146182.5697026,
-    "seen": 1793146227.6627014,
-    "ast_hash": "2181c0d7b7dcebd36e7e4a239bcd66b6",
+    "mtime": 1793147143.0151122,
+    "seen": 1793147178.9652817,
+    "ast_hash": "7c1ff4b6e716d007afec6ec60834d62a",
     "semantic_hash": ""
   },
   "Stillday/Sources/Stillday/Ladder.swift": {
     "mtime": 1793146079.3596613,
     "seen": 1793146227.6627014,
     "ast_hash": "2b52ffebdcb44d37dbd7f0441806916e",
+    "semantic_hash": ""
+  },
+  "Stillday/Sources/Stillday/Stuck.swift": {
+    "mtime": 1793147055.515469,
+    "seen": 1793147178.9652817,
+    "ast_hash": "118c70bb041dd39f0b9790ce918fcca7",
     "semantic_hash": ""
   }
 }

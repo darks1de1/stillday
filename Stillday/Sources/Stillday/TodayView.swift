@@ -9,6 +9,8 @@ struct TodayView: View {
     @State private var showDayPlan = false
     @State private var clearBurst = 0
     @State private var wins = 0
+    @State private var refresh = 0
+    @Environment(\.scenePhase) private var phase
 
     var body: some View {
         ScrollView {
@@ -62,6 +64,21 @@ struct TodayView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
+                // Shown only when the signs say you are avoiding your next task; otherwise Today stays quiet.
+                TimelineView(.periodic(from: .now, by: 60)) { _ in
+                    let _ = refresh
+                    if let offer = store.helpNow {
+                        HelpCard(offer: offer,
+                                 start: { store.openJustThis = offer.task.id },
+                                 later: {
+                                     Behavior.shared.snooze(hours: 1)
+                                     withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { refresh += 1 }
+                                 })
+                            .padding(.bottom, 12)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+
                 if !store.yesterdayOpen.isEmpty {
                     Button { withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) { store.moveYesterdayToToday() } } label: {
                         Text("Move \(store.yesterdayOpen.count) from yesterday to today")
@@ -113,6 +130,13 @@ struct TodayView: View {
         .overlay { if clearBurst > 0 { Burst(count: 30, radius: 150).id(clearBurst) } }
         .sheet(isPresented: $showVoice) { VoiceSheet(day: store.startOfDay()) }
         .sheet(isPresented: $showDayPlan) { PlanDaySheet() }
+        .sheet(isPresented: Binding(get: { store.openJustThis != nil }, set: { if !$0 { store.openJustThis = nil } })) {
+            if let id = store.openJustThis { JustThisSheet(taskID: id) }
+        }
+        .task(id: store.helpNow?.task.id) {
+            if let t = store.helpNow?.task, t.steps.isEmpty { await prefetch(t) }
+        }
+        .onChange(of: phase) { _, p in if p == .active { refresh += 1 } }
         .sheet(isPresented: $showPlan) {
             PlanView().background(Theme.bg.ignoresSafeArea()).presentationDragIndicator(.visible)
         }
@@ -140,6 +164,16 @@ struct TodayView: View {
         store.showToast(m)
     }
 
+    /// When you seem stuck, have the first tiny step ready before you ask, so one tap starts it.
+    private func prefetch(_ t: TaskItem) async {
+        var steps = Behavior.shared.ladder(for: t.title)
+        if steps == nil {
+            let answer = await AIPlanner.ask(Ladder.prompt(t.title))
+            steps = answer.text.flatMap(Ladder.parse)
+        }
+        store.setSteps(t.id, steps ?? Ladder.fallback(t.title))
+    }
+
     private func remove(_ t: TaskItem, archive: Bool) {
         Sound.play(archive ? .archive : .trash)
         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
@@ -162,20 +196,6 @@ struct TaskRow: View {
     @State private var showSteps = false
 
     private var tint: Color { task.isDone ? Theme.mute : isNext ? Theme.next : Theme.ink }
-
-    private var justButton: some View {
-        Button { showJust = true } label: {
-            HStack(spacing: 5) {
-                Text(task.started ? "Continue" : "Just start").font(Theme.sans(12, .semibold))
-                Image(systemName: "arrow.right").font(.system(size: 10, weight: .bold))
-            }
-            .foregroundStyle(Theme.next)
-            .padding(.horizontal, 11).padding(.vertical, 7)
-            .background(Theme.next.opacity(0.12), in: Capsule())
-        }
-        .buttonStyle(PressStyle())
-        .padding(.top, 12)
-    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -210,10 +230,10 @@ struct TaskRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressStyle())
-        if isNext && !task.isDone { justButton }
         }
         .contextMenu {
             if !task.isDone {
+                Button { showJust = true } label: { Label("Just this", systemImage: "arrow.right.circle") }
                 Button { showSteps = true } label: { Label("Tiny steps", systemImage: "list.number") }
                 Button {
                     if !FocusController.shared.start(task) {

@@ -21,6 +21,7 @@ struct TaskItem: Identifiable, Codable, Equatable {
     var plannedAt: Date?
     var minutes: Int?
     var steps: [TaskStep] = []
+    var carried = 0
     var isDone: Bool { doneAt != nil }
     var currentStep: TaskStep? { steps.first { !$0.done } }
     /// You did at least the first small step. That counts as showing up.
@@ -45,6 +46,7 @@ struct TaskItem: Identifiable, Codable, Equatable {
         plannedAt = try c.decodeIfPresent(Date.self, forKey: .plannedAt)
         minutes = try c.decodeIfPresent(Int.self, forKey: .minutes)
         steps = try c.decodeIfPresent([TaskStep].self, forKey: .steps) ?? []
+        carried = try c.decodeIfPresent(Int.self, forKey: .carried) ?? 0
     }
 }
 
@@ -65,8 +67,12 @@ struct ToastMsg: Equatable {
 
 @MainActor @Observable
 final class Store {
+    static let shared = Store()
+
     var tasks: [TaskItem] = []
     var toast: ToastMsg?
+    /// Set when you tap a nudge: Today opens "Just this" for that task.
+    var openJustThis: UUID?
     @ObservationIgnored private let url = URL.documentsDirectory.appending(path: "tasks.json")
     @ObservationIgnored let cal = Calendar.current
     static let trashDays = 30
@@ -101,6 +107,7 @@ final class Store {
     func toggle(_ id: UUID) {
         guard let i = tasks.firstIndex(where: { $0.id == id }) else { return }
         tasks[i].doneAt = tasks[i].isDone ? nil : .now
+        if tasks[i].isDone { Behavior.shared.noteAction() }
         commit()
     }
 
@@ -149,6 +156,7 @@ final class Store {
         guard let i = tasks.firstIndex(where: { $0.id == id }),
               let s = tasks[i].steps.firstIndex(where: { !$0.done }) else { return false }
         tasks[i].steps[s].done = true
+        Behavior.shared.noteAction()
         commit()
         return !tasks[i].steps.contains { !$0.done }
     }
@@ -190,9 +198,32 @@ final class Store {
         for i in tasks.indices where ids.contains(tasks[i].id) {
             tasks[i].day = startOfDay()
             tasks[i].order = order
+            tasks[i].carried += 1
             order += 1
         }
         commit()
+    }
+
+    struct HelpOffer {
+        let task: TaskItem
+        let reason: String
+    }
+
+    /// What the app can see about whether you are avoiding this task right now.
+    func signals(for t: TaskItem, now: Date = .now) -> Stuck.Signals {
+        let b = Behavior.shared
+        let overdue = t.plannedAt.map { max(0, Int(now.timeIntervalSince($0) / 60)) } ?? 0
+        let quiet = now.timeIntervalSince(b.state.lastAction ?? .distantPast) > 45 * 60
+        return Stuck.Signals(looks: b.looksSinceAction(now: now, cal: cal), ignored: b.ignoredStreak,
+                             overdueMinutes: t.started ? 0 : overdue, carried: t.carried,
+                             idleHours: b.idleHours(now: now, cal: cal), stalled: t.started && quiet)
+    }
+
+    /// Offer help only when the signs say you are stuck, and not while you have said "later".
+    var helpNow: HelpOffer? {
+        guard let t = next, Behavior.shared.snoozedUntil < .now else { return nil }
+        let s = signals(for: t)
+        return Stuck.needsHelp(s) ? HelpOffer(task: t, reason: Stuck.reason(s) ?? "") : nil
     }
 
     /// Archived tasks still count as wins and in the weekly numbers; trashed ones do not.

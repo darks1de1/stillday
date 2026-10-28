@@ -20,6 +20,8 @@ final class Behavior {
         var pending: [Date] = []           // nudges scheduled but not yet judged
         var runs: [Run] = []
         var ladders: [String: [String]] = [:]   // your own steps, remembered by task title
+        var lastAction: Date?              // last time you finished a task or a step
+        var snoozedUntil: Date?            // "Later" on the stuck offer
 
         init() {}
         init(from decoder: Decoder) throws {
@@ -29,6 +31,8 @@ final class Behavior {
             pending = try c.decodeIfPresent([Date].self, forKey: .pending) ?? []
             runs = try c.decodeIfPresent([Run].self, forKey: .runs) ?? []
             ladders = try c.decodeIfPresent([String: [String]].self, forKey: .ladders) ?? [:]
+            lastAction = try c.decodeIfPresent(Date.self, forKey: .lastAction)
+            snoozedUntil = try c.decodeIfPresent(Date.self, forKey: .snoozedUntil)
         }
     }
 
@@ -77,6 +81,35 @@ final class Behavior {
     }
 
     func ladder(for title: String) -> [String]? { state.ladders[Ladder.key(title)] }
+
+    /// Finishing a task or a step is doing something; opening the app and looking is not.
+    func noteAction(now: Date = .now) {
+        state.lastAction = now
+        state.snoozedUntil = nil
+        save()
+    }
+
+    func snooze(hours: Double, now: Date = .now) {
+        state.snoozedUntil = now.addingTimeInterval(hours * 3600)
+        save()
+    }
+
+    var snoozedUntil: Date { state.snoozedUntil ?? .distantPast }
+
+    /// Opens today since you last did anything. The open you are in counts.
+    func looksSinceAction(now: Date = .now, cal: Calendar = .current) -> Int {
+        let from = max(state.lastAction ?? .distantPast, cal.startOfDay(for: now))
+        return state.opens.filter { $0 >= from && $0 <= now }.count
+    }
+
+    /// Hours of quiet since your last action (or your first open today), only between 8 am and 10 pm.
+    func idleHours(now: Date = .now, cal: Calendar = .current) -> Double {
+        let hour = cal.component(.hour, from: now)
+        guard (8..<22).contains(hour) else { return 0 }
+        let today = cal.startOfDay(for: now)
+        let anchor = state.lastAction.map { max($0, today) } ?? state.opens.first { $0 >= today } ?? now
+        return max(0, now.timeIntervalSince(anchor) / 3600)
+    }
 
     private func save() {
         if let data = try? JSONEncoder().encode(state) { try? data.write(to: url, options: .atomic) }
