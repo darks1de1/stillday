@@ -10,7 +10,8 @@ enum WidgetBridge {
         let open = s.today.filter { !$0.isDone }
         Shared.write(WidgetSnapshot(date: .now, next: open.first?.title, nextMinutes: open.first?.minutes,
                                     plannedAt: open.first?.plannedAt, done: s.doneCount, total: s.today.count,
-                                    streak: s.streak, upcoming: open.dropFirst().prefix(3).map(\.title)))
+                                    streak: s.streak, upcoming: open.dropFirst().prefix(3).map(\.title),
+                                    step: open.first?.currentStep?.title))
         WidgetCenter.shared.reloadAllTimelines()
     }
 }
@@ -28,18 +29,29 @@ final class FocusController {
 
     /// Returns false when Live Activities are turned off for the app in Settings.
     @discardableResult
-    func start(_ t: TaskItem) -> Bool {
+    func start(_ t: TaskItem) -> Bool { start(taskID: t.id, title: t.title, minutes: t.minutes ?? 25) }
+
+    @discardableResult
+    func start(taskID id: UUID, title text: String, minutes: Int) -> Bool {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return false }
         end()
-        let state = FocusAttributes.ContentState(title: t.title, start: .now, minutes: t.minutes ?? 25)
+        let state = FocusAttributes.ContentState(title: text, start: .now, minutes: minutes)
         do {
             activity = try Activity.request(attributes: FocusAttributes(), content: .init(state: state, staleDate: nil))
-            taskID = t.id
-            title = t.title
+            taskID = id
+            title = text
             return true
         } catch {
             return false
         }
+    }
+
+    /// Moves the island to the next step and restarts its ring.
+    func update(title text: String, minutes: Int) {
+        guard let a = activity else { return }
+        title = text
+        let state = FocusAttributes.ContentState(title: text, start: .now, minutes: minutes)
+        Task { await a.update(.init(state: state, staleDate: nil)) }
     }
 
     func end() {

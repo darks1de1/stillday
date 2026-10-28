@@ -14,11 +14,13 @@ public struct WidgetSnapshot: Codable, Equatable {
     public var total: Int
     public var streak: Int
     public var upcoming: [String]
+    /// The next tiny step of the next task, when it has a ladder.
+    public var step: String?
 
     public init(date: Date = .now, next: String? = nil, nextMinutes: Int? = nil, plannedAt: Date? = nil,
-                done: Int = 0, total: Int = 0, streak: Int = 0, upcoming: [String] = []) {
+                done: Int = 0, total: Int = 0, streak: Int = 0, upcoming: [String] = [], step: String? = nil) {
         self.date = date; self.next = next; self.nextMinutes = nextMinutes; self.plannedAt = plannedAt
-        self.done = done; self.total = total; self.streak = streak; self.upcoming = upcoming
+        self.done = done; self.total = total; self.streak = streak; self.upcoming = upcoming; self.step = step
     }
 
     public static let sample = WidgetSnapshot(next: "Draft the Friday client brief", nextMinutes: 45, done: 2, total: 6, streak: 12,

@@ -56,8 +56,17 @@ enum Planner {
     }
 
     /// Short, specific and a little different each time. Wording gets more direct the more nudges are ignored.
-    static func copy(ignored: Int, title: String, left: Int, streak: Int, index: Int) -> String {
+    static func copy(ignored: Int, title: String, left: Int, streak: Int, index: Int, step: String? = nil) -> String {
         let t = title.count > 40 ? String(title.prefix(40)) + "…" : title
+        if let step {
+            // A task with a ladder is never asked for more than its next tiny step.
+            let s = step.count > 60 ? String(step.prefix(60)) + "…" : step
+            switch ignored {
+            case ..<2: return ["Just this: \(s)", "Only this: \(s)", "Small step: \(s)"][index % 3]
+            case 2..<4: return ["\(s). That is all, for now.", "Just this, then see: \(s)"][index % 2]
+            default: return streak > 0 ? "\(s). One step keeps day \(streak) alive." : "\(s). Just this."
+            }
+        }
         switch ignored {
         case ..<2:
             return ["Next: \(t). Five minutes?", "\(left) left. \(t) is up.", "Small step: \(t)."][index % 3]

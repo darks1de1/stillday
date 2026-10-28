@@ -3,6 +3,13 @@ import Observation
 
 enum TaskState: String, Codable { case active, archived, trashed }
 
+/// One rung of a task's ladder of tiny steps.
+struct TaskStep: Identifiable, Codable, Equatable {
+    var id = UUID()
+    var title: String
+    var done = false
+}
+
 struct TaskItem: Identifiable, Codable, Equatable {
     var id = UUID()
     var title: String
@@ -13,7 +20,11 @@ struct TaskItem: Identifiable, Codable, Equatable {
     var removedAt: Date?
     var plannedAt: Date?
     var minutes: Int?
+    var steps: [TaskStep] = []
     var isDone: Bool { doneAt != nil }
+    var currentStep: TaskStep? { steps.first { !$0.done } }
+    /// You did at least the first small step. That counts as showing up.
+    var started: Bool { steps.contains(where: \.done) }
 
     init(title: String, day: Date, order: Int) {
         self.title = title
@@ -33,6 +44,7 @@ struct TaskItem: Identifiable, Codable, Equatable {
         removedAt = try c.decodeIfPresent(Date.self, forKey: .removedAt)
         plannedAt = try c.decodeIfPresent(Date.self, forKey: .plannedAt)
         minutes = try c.decodeIfPresent(Int.self, forKey: .minutes)
+        steps = try c.decodeIfPresent([TaskStep].self, forKey: .steps) ?? []
     }
 }
 
@@ -119,6 +131,36 @@ final class Store {
         commit()
     }
 
+    /// Replaces the ladder. Steps you already did stay done if their words are unchanged.
+    func setSteps(_ id: UUID, _ titles: [String]) {
+        guard let i = tasks.firstIndex(where: { $0.id == id }) else { return }
+        let old = tasks[i].steps
+        tasks[i].steps = titles
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { t in old.first { $0.title == t } ?? TaskStep(title: t) }
+        Behavior.shared.remember(tasks[i].title, tasks[i].steps.map(\.title))
+        commit()
+    }
+
+    /// Marks the current step done. Returns true when that was the last one.
+    @discardableResult
+    func completeStep(_ id: UUID) -> Bool {
+        guard let i = tasks.firstIndex(where: { $0.id == id }),
+              let s = tasks[i].steps.firstIndex(where: { !$0.done }) else { return false }
+        tasks[i].steps[s].done = true
+        commit()
+        return !tasks[i].steps.contains { !$0.done }
+    }
+
+    /// Puts a smaller step in front of the current one.
+    func insertStepBeforeCurrent(_ id: UUID, _ title: String) {
+        guard let i = tasks.firstIndex(where: { $0.id == id }),
+              let s = tasks[i].steps.firstIndex(where: { !$0.done }) else { return }
+        tasks[i].steps.insert(TaskStep(title: title), at: s)
+        commit()
+    }
+
     func rename(_ id: UUID, to title: String) {
         let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty, let i = tasks.firstIndex(where: { $0.id == id }), tasks[i].title != t else { return }
@@ -156,7 +198,8 @@ final class Store {
     /// Archived tasks still count as wins and in the weekly numbers; trashed ones do not.
     private func counted(on d: Date) -> [TaskItem] { tasks.filter { $0.day == d && $0.state != .trashed } }
 
-    func hasWin(_ d: Date) -> Bool { counted(on: d).contains(where: \.isDone) }
+    /// A finished task, or a ladder you started, makes the day count.
+    func hasWin(_ d: Date) -> Bool { counted(on: d).contains { $0.isDone || $0.started } }
 
     /// Consecutive days with at least one finished task, counting back from today (or yesterday if today has none yet).
     var streak: Int {

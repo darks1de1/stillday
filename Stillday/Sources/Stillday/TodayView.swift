@@ -158,10 +158,27 @@ struct TaskRow: View {
     @Environment(Store.self) private var store
     @State private var burst = 0
     @State private var editing = false
+    @State private var showJust = false
+    @State private var showSteps = false
 
     private var tint: Color { task.isDone ? Theme.mute : isNext ? Theme.next : Theme.ink }
 
+    private var justButton: some View {
+        Button { showJust = true } label: {
+            HStack(spacing: 5) {
+                Text(task.started ? "Continue" : "Just start").font(Theme.sans(12, .semibold))
+                Image(systemName: "arrow.right").font(.system(size: 10, weight: .bold))
+            }
+            .foregroundStyle(Theme.next)
+            .padding(.horizontal, 11).padding(.vertical, 7)
+            .background(Theme.next.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(PressStyle())
+        .padding(.top, 12)
+    }
+
     var body: some View {
+        HStack(alignment: .top, spacing: 8) {
         Button(action: action) {
             HStack(alignment: .top, spacing: 14) {
                 Bullet(done: task.isDone, next: isNext)
@@ -182,6 +199,10 @@ struct TaskRow: View {
                         Text(p.formatted(date: .omitted, time: .shortened) + (task.minutes.map { " · \($0) min" } ?? ""))
                             .font(Theme.sans(12)).foregroundStyle(isNext ? Theme.next : Theme.mute).monospacedDigit()
                     }
+                    if !task.steps.isEmpty && !task.isDone {
+                        Text("\(task.steps.filter(\.done).count) of \(task.steps.count) steps")
+                            .font(Theme.sans(12)).foregroundStyle(Theme.mute)
+                    }
                 }
                 Spacer(minLength: 0)
             }
@@ -189,8 +210,11 @@ struct TaskRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressStyle())
+        if isNext && !task.isDone { justButton }
+        }
         .contextMenu {
             if !task.isDone {
+                Button { showSteps = true } label: { Label("Tiny steps", systemImage: "list.number") }
                 Button {
                     if !FocusController.shared.start(task) {
                         store.showToast("Turn on Live Activities for Stillday in Settings")
@@ -202,6 +226,8 @@ struct TaskRow: View {
         .sheet(isPresented: $editing) {
             EditSheet(initial: task.title) { store.rename(task.id, to: $0) }
         }
+        .sheet(isPresented: $showJust) { JustThisSheet(taskID: task.id) }
+        .sheet(isPresented: $showSteps) { StepsEditor(task: task) }
         .onChange(of: task.isDone) { _, done in if done { burst += 1 } }
     }
 }

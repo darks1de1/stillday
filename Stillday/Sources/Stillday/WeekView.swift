@@ -62,6 +62,14 @@ struct WeekView: View {
 
                 Card {
                     VStack(alignment: .leading, spacing: 4) {
+                        Label12(text: "Just this")
+                        Text(justLine).font(Theme.serif(19)).foregroundStyle(Theme.ink)
+                    }
+                }
+                .padding(.top, 14)
+
+                Card {
+                    VStack(alignment: .leading, spacing: 4) {
                         Label12(text: "Delivered")
                         Text("Every Sunday at 7 pm, as a notification and here.").font(Theme.serif(19)).foregroundStyle(Theme.ink)
                     }
@@ -76,6 +84,14 @@ struct WeekView: View {
             withAnimation(.easeOut(duration: 1.6).delay(0.3)) { drawn = 1 }
             withAnimation(.easeOut(duration: 0.9).delay(0.2)) { counted = true }
         }
+    }
+
+    /// Your own evidence: how often a tiny first step turned into the whole task.
+    private var justLine: String {
+        let runs = Behavior.shared.runs(since: store.day(offset: -6))
+        if runs.isEmpty { return "No starts yet. Press Just start on your next task." }
+        let finished = runs.filter(\.finished).count
+        return "\(runs.count) start\(runs.count == 1 ? "" : "s"), \(finished) finished the whole task. \(runs.count - finished) stopped early and still counted."
     }
 
     private func winDays(_ days: [DayStat]) -> String {

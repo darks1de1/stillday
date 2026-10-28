@@ -38,7 +38,7 @@ enum Notifier {
                                         answeredStreak: b.answeredStreak, remaining: left.count, cal: s.cal))
         for (i, t) in times.enumerated() {
             let body = Planner.copy(ignored: b.ignoredStreak, title: left.first?.title ?? "your list",
-                                    left: left.count, streak: streak, index: i)
+                                    left: left.count, streak: streak, index: i, step: left.first?.currentStep?.title)
             add("nudge-t-\(i)", at: t, body)
         }
         b.setPending(times)

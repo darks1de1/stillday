@@ -79,7 +79,9 @@ struct StilldayWidgetView: View {
                 .foregroundStyle(Palette.next)
                 .lineLimit(3)
                 .minimumScaleFactor(0.85)
-            if let meta, !meta.isEmpty {
+            if fresh, let step = snap.step {
+                Text("Just this: \(step)").font(.system(size: 11, weight: .medium)).foregroundStyle(Palette.ink).lineLimit(2)
+            } else if let meta, !meta.isEmpty {
                 Text(meta).font(.system(size: 11)).foregroundStyle(Palette.mute)
             }
             Spacer(minLength: 0)
@@ -133,7 +135,7 @@ struct StilldayWidgetView: View {
     private var rectangular: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("NEXT · \(counts)").font(.system(size: 10, weight: .medium)).tracking(1)
-            Text(title).font(.system(size: 14, weight: .semibold)).lineLimit(2)
+            Text(fresh ? (snap.step.map { "Just this: \($0)" } ?? title) : title).font(.system(size: 14, weight: .semibold)).lineLimit(2)
             ProgressView(value: progress)
         }
     }
